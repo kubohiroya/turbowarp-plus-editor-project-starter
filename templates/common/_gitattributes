@@ -1,0 +1,14 @@
+# Keep the project data readable in diffs on every OS.
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.svg text eol=lf
+# Bitmaps and sounds are compared by size, never merged line by line.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.bmp binary
+*.wav binary
+*.mp3 binary
+*.ogg binary

@@ -1,0 +1,53 @@
+# While the project is still edited on scratch.mit.edu, run this from the Actions tab to bring the
+# latest shared version in as a pull request. Review it like any other change before merging.
+# It needs "Allow GitHub Actions to create and approve pull requests" (Settings → Actions → General).
+name: Import from Scratch
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Scratch project URL or ID (leave empty for the one in scratch-project.json)
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency: scratch-import
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Import the latest shared version
+        env:
+          PROJECT: ${{ inputs.project }}
+        run: >-
+          npx --yes @kubohiroya/turbowarp-plus-editor-project-starter@__STARTER_VERSION__
+          reimport ${PROJECT:+"$PROJECT"} --dir . --summary "$RUNNER_TEMP/summary.md"
+      - name: Open a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          BASE: ${{ github.ref_name }}
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          branch="scratch-import/$RUN_ID"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git add -A
+          git commit -m "Import the latest version from Scratch"
+          git push origin "$branch"
+          gh pr create --base "$BASE" --head "$branch" \
+            --title "$(head -n 1 "$RUNNER_TEMP/summary.md" | sed 's/^# //')" \
+            --body-file "$RUNNER_TEMP/summary.md"

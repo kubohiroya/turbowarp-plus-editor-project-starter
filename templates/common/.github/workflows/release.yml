@@ -1,0 +1,34 @@
+# Publishing a release on GitHub builds the SB3 from the release's tag and attaches it,
+# with its SHA-256, to that release.
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  attach-sb3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Validate the project folder
+        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check __PROJECT_DIR__
+      - name: Build the SB3
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build __PROJECT_DIR__ --output "dist/__SB3_NAME__-${TAG//\//-}.sb3" --yes
+      - name: Record the SHA-256
+        run: cd dist && sha256sum -- *.sb3 > SHA256SUMS.txt
+      - name: Attach the SB3 to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" dist/*.sb3 dist/SHA256SUMS.txt --clobber

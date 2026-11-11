@@ -1,0 +1,29 @@
+name: Bug
+description: The project does not behave as it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Which sprite, what you did, and what happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to make it happen
+      placeholder: |
+        1. Click the green flag
+        2. Press space three times
+  - type: input
+    id: version
+    attributes:
+      label: Version played
+      description: A release name from Releases, or a commit ID
