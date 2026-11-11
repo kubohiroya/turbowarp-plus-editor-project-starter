@@ -20,7 +20,7 @@ Download the latest `.sb3` from [Releases](../../releases) and open it in [Turbo
 ## How we work
 
 1. Describe an idea or a bug in an **issue**.
-2. In Plus Editor, choose File → Local Git…, select this repository's folder, and create a **branch** for the work.
+2. In Plus Editor, press the branch button in the menu bar (it reads Git until a repository is chosen), choose Choose Repository…, select this repository's folder, and create a **branch** for the work.
 3. Open `__PROJECT_DIR__`, edit, and choose File → Save to write back to the project folder.
 4. Review the changes in the Local Git panel, **commit**, and **push** to GitHub.
 5. Open a **pull request** on GitHub. The "Check project" action validates the project and builds an SB3 you can try.

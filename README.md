@@ -72,7 +72,7 @@ Creates the repository with the GitHub CLI and pushes `main`. It is **private** 
 
 ## 5. Open it in Plus Editor
 
-Open [Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/editor.html) in Chrome or Edge, choose File → Local Git…, press Choose Repository… and select the repository folder, pick `project`, and press Open This Project. File → Open project folder… opens the project folder alone.
+Open [Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/editor.html) in Chrome or Edge, press the branch button in the menu bar, left of the stage button (it reads Git until a repository is chosen), choose Choose Repository… and select the repository folder, then pick `project` in the Local Git panel and press Open This Project. File → Open project folder… opens the project folder alone.
 
 ## 6. Decide what happens on Scratch
 

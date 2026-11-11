@@ -113,7 +113,7 @@ GitHub CLI でリポジトリを作り、`main` を push します。次のこ�
 ## 5. Plus Editor で開く
 
 1. Chrome か Edge で [Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/editor.html?lang=ja) を開きます。
-2. 「ファイル」→「ローカル Git…」を選び、「リポジトリを選択…」で作ったリポジトリのフォルダ（`neko-adventure`）を選び、読み書きを許可します。
+2. メニューバーの「ステージを開く」の左にあるブランチのボタン（リポジトリを選ぶ前は「Git」と表示されます）を押し、「リポジトリを選択…」で作ったリポジトリのフォルダ（`neko-adventure`）を選び、読み書きを許可します。ローカル Git のパネルが開きます。
 3. 一覧から作品フォルダ `project` を選び、「この作品を開く」を押します。
 
 作品フォルダだけを開くなら「ファイル」→「プロジェクトフォルダを開く…」で `project` を選びます。ここからの開発の手順は「[GitHub で作品を開発する](https://kubohiroya.github.io/turbowarp-plus-editor/features/github/)」を読んでください。
