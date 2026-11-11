@@ -66,7 +66,7 @@ async function main(argv: string[]): Promise<void> {
         log('Next:');
         log(`  npx @kubohiroya/turbowarp-plus-editor-project-starter@${starterVersion} publish ${relative}`);
         log('  Then open https://kubohiroya.github.io/turbowarp-plus-editor/editor.html in Chrome or Edge,');
-        log(`  choose File → Local Git…, select ${relative}, and open "${result.manifest.projectDirectory}".`);
+        log(`  press the branch button in the menu bar (it reads Git until a repository is chosen), choose Choose Repository…, select ${relative}, and open "${result.manifest.projectDirectory}".`);
         return;
     }
 
