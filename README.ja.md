@@ -143,7 +143,7 @@ Actions が作ったプルリクエストでは、GitHub の仕様で「Check pr
 | `still in the Scratch 2 format` | 古い形式の作品です。Scratch のエディターで開いて `.sb3` を保存して渡します |
 | `already exists and is not empty` | `--dir` で別のフォルダを指定します。既存のファイルは変えません |
 | `gh … failed` | `gh auth status` でログインを確かめます。同じ名前のリポジトリがあれば `--name` で変えます |
-| Plus Editor で作品フォルダを開けない | カスタム拡張機能・埋め込み拡張・フォントを含む作品は、まだ作品フォルダとして開けません。Scratch で作った作品には含まれません |
+| Plus Editor で作品フォルダを開けない | TurboWarp のカスタムフォントを含む作品は、まだ作品フォルダとして開けません。Scratch で作った作品には含まれません。埋め込み拡張・カスタム拡張機能を含む作品は、Plus Editor で開いて保存できます |
 
 ## コマンド
 
