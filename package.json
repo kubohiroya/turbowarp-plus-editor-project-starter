@@ -1,0 +1,66 @@
+{
+  "name": "@kubohiroya/turbowarp-plus-editor-project-starter",
+  "version": "0.1.0",
+  "description": "Move a Scratch project into a GitHub repository developed with TurboWarp Plus Editor",
+  "type": "module",
+  "license": "MPL-2.0",
+  "author": {
+    "name": "Hiroya Kubo",
+    "email": "hiroya@cuc.ac.jp",
+    "url": "https://github.com/kubohiroya"
+  },
+  "homepage": "https://github.com/kubohiroya/turbowarp-plus-editor-project-starter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kubohiroya/turbowarp-plus-editor-project-starter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kubohiroya/turbowarp-plus-editor-project-starter/issues"
+  },
+  "keywords": [
+    "turbowarp",
+    "scratch",
+    "sb3",
+    "github",
+    "turbowarp-plus"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "turbowarp-plus-editor-project-starter": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md",
+    "README.ja.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.js",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@kubohiroya/sb3-toolchain": "0.22.0",
+    "fflate": "0.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "6.0.3",
+    "yaml": "2.9.1"
+  }
+}

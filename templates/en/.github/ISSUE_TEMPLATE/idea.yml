@@ -1,0 +1,23 @@
+name: Idea or improvement
+description: Add a new behavior, level, look or sound
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you want to add
+      description: What a player will be able to do
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+  - type: textarea
+    id: done
+    attributes:
+      label: How we know it is done
+      description: Checks that tell the work is complete
+      placeholder: |
+        - [ ] After the green flag, the player can reach level 2
+        - [ ] Level 2 has its own backdrop and music

@@ -1,0 +1,23 @@
+name: アイデア・改善
+description: 新しい動き・ステージ・見た目などを足したいとき
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: やりたいこと
+      description: 遊ぶ人から見て、何ができるようになるか
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: なぜやりたいか
+  - type: textarea
+    id: done
+    attributes:
+      label: できあがりの目安
+      description: これができたら完成、と言える確かめ方
+      placeholder: |
+        - [ ] 緑の旗のあと、2面に進める
+        - [ ] 2面の背景と音楽が1面と違う

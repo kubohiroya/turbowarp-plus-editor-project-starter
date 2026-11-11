@@ -1,0 +1,7 @@
+# Built SB3 files. GitHub Actions builds them from project/; keep them out of Git.
+dist/
+*.sb3
+# Left by sb3-toolchain when a replacement was rolled back. Compare before deleting.
+.*.rollback-*
+.DS_Store
+Thumbs.db

@@ -1,0 +1,30 @@
+# Validates the project folder and builds an SB3 for every push to main and every pull request.
+# Download the SB3 from the run's "Artifacts" to try a pull request before merging it.
+name: Check project
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Validate the project folder
+        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check __PROJECT_DIR__
+      - name: Build the SB3
+        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build __PROJECT_DIR__ --output dist/__SB3_NAME__.sb3 --yes
+      - uses: actions/upload-artifact@v4
+        with:
+          name: __SB3_NAME__-sb3
+          path: dist/__SB3_NAME__.sb3
+          if-no-files-found: error
