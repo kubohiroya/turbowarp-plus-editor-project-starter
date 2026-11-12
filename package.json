@@ -34,6 +34,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./seed": {
+      "types": "./dist/seed.d.ts",
+      "default": "./dist/seed.js"
+    },
     "./package.json": "./package.json"
   },
   "bin": {
@@ -50,13 +54,14 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node scripts/embed-repository-templates.mjs && tsc -p tsconfig.json",
     "test": "npm run build && node --test test/*.test.js",
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@kubohiroya/sb3-toolchain": "0.22.0",
-    "fflate": "0.8.3"
+    "@kubohiroya/sb3-toolchain": "0.23.0",
+    "fflate": "0.8.3",
+    "isomorphic-git": "1.44.11"
   },
   "devDependencies": {
     "@types/node": "24.19.2",

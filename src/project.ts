@@ -7,6 +7,9 @@ import {promisify} from 'node:util';
 import {importSb3, validateSb3Source} from '@kubohiroya/sb3-toolchain';
 import {fetchScratchProject, parseScratchProjectId, type FetchScratchProjectOptions, type ScratchProjectInfo} from './scratch.js';
 import {renderTemplates, type Language} from './templates.js';
+import {slugify} from './template-text.js';
+
+export {slugify} from './template-text.js';
 
 const run = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -54,13 +57,6 @@ export async function resolveInput(input: string, options: FetchScratchProjectOp
     const sb3Path = path.join(directory, `${id}.sb3`);
     await writeFile(sb3Path, fetched.sb3);
     return {sb3Path, scratch: fetched.info, cleanup: () => rm(directory, {recursive: true, force: true})};
-}
-
-/** An ASCII name for the repository folder and SB3 file; falls back when the title has no Latin letters. */
-export function slugify(title: string, fallback: string): string {
-    const slug = title.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '');
-    return slug.length >= 2 ? slug : fallback;
 }
 
 async function git(cwd: string, ...args: string[]): Promise<string> {
