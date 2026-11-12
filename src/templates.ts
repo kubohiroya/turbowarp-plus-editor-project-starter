@@ -2,13 +2,12 @@ import {readdir, readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import type {ScratchProjectInfo} from './scratch.js';
+import {scratchSection, workflowGuideUrl, type Language} from './template-text.js';
 
-export type Language = 'ja' | 'en';
+export {workflowGuideUrl} from './template-text.js';
+export type {Language} from './template-text.js';
 
 export const templatesDirectory = fileURLToPath(new URL('../templates/', import.meta.url));
-
-/** The Plus Editor feature guide chapter that walks through issue → release. */
-export const workflowGuideUrl = 'https://kubohiroya.github.io/turbowarp-plus-editor/features/github/';
 
 export interface TemplateValues {
     title: string;
@@ -32,26 +31,6 @@ async function listFiles(root: string, directory = ''): Promise<string[]> {
         else if (entry.isFile()) files.push(relative);
     }
     return files.sort();
-}
-
-/** Text that a Markdown renderer shows as written: no headings, links or HTML from the Scratch page. */
-function quoteMarkdown(text: string): string {
-    return text.replace(/\r\n?/g, '\n').trim().split('\n')
-        // Escape what could turn into links, HTML, code or tables; leave "_" alone so URLs stay intact.
-        .map(line => `> ${line.replace(/([\\`*[\]<>|])/g, '\\$1').replace(/^(\s*)([#=-])/, '$1\\$2')}`).join('\n');
-}
-
-function scratchSection(scratch: ScratchProjectInfo | null, language: Language): string {
-    if (!scratch) return '';
-    const ja = language === 'ja';
-    const title = scratch.title.replace(/([\\[\]<>*_`])/g, '\\$1');
-    const author = scratch.author?.replace(/([\\[\]<>*_`])/g, '\\$1');
-    const lines = [ja
-        ? `Scratch で公開されている作品「[${title}](${scratch.url})」${author ? `（作者：${author}）` : ''}を元にしています。Scratch で共有された作品は [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/deed.ja) で公開されています。`
-        : `Based on the Scratch project "[${title}](${scratch.url})"${author ? ` by ${author}` : ''}. Projects shared on Scratch are licensed under [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/).`, ''];
-    if (scratch.instructions.trim()) lines.push(ja ? '## 使い方' : '## Instructions', '', quoteMarkdown(scratch.instructions), '');
-    if (scratch.notes.trim()) lines.push(ja ? '## メモとクレジット' : '## Notes and credits', '', quoteMarkdown(scratch.notes), '');
-    return lines.join('\n');
 }
 
 /** Renders the repository files the starter adds next to the project folder, keyed by repository path. */

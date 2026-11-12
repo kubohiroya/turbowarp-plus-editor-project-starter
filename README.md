@@ -103,6 +103,24 @@ npm test
 
 Expansion and SB3 builds use a pinned [sb3-toolchain](https://github.com/kubohiroya/sb3-toolchain); the generated repository's Actions pin the same version.
 
+## Prepare an initial commit in a browser
+
+The `/seed` entry point takes the browser unpacker and version of sb3-toolchain, then creates the project folder, README and optional license in memory. The files use the same project folder format as the CLI.
+
+```ts
+import {packageVersion, unpackSb3} from '@kubohiroya/sb3-toolchain/browser';
+import {createRepositorySeed} from '@kubohiroya/turbowarp-plus-editor-project-starter/seed';
+
+const {files, warnings} = createRepositorySeed({
+    sb3: new Uint8Array(await sb3File.arrayBuffer()),
+    title: 'My project',
+    description: 'A short project description',
+    language: 'en'
+}, {unpackSb3, toolchainVersion: packageVersion});
+```
+
+`files` is an array of `{path, bytes}` pairs. Show `warnings` before publishing. Import errors are distinguished by `SeedError.code`. To add a license, pass its identifier and complete text as `license: {name, text}`.
+
 ## License
 
 SPDX-License-Identifier: MPL-2.0

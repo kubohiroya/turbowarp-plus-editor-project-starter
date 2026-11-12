@@ -167,6 +167,24 @@ npm test
 
 作品フォルダへの展開と SB3 の再生成は [sb3-toolchain](https://github.com/kubohiroya/sb3-toolchain) の版を固定して使います。作るリポジトリの Actions も同じ版を使います。
 
+## ブラウザーで初期コミットのファイルを作る
+
+`/seed` は、ブラウザー向け sb3-toolchain の展開関数と使用版を受け取り、README、作品フォルダ、指定したライセンスのファイルをメモリー上に作ります。既存の CLI と同じ作品フォルダ形式を使用します。
+
+```ts
+import {packageVersion, unpackSb3} from '@kubohiroya/sb3-toolchain/browser';
+import {createRepositorySeed} from '@kubohiroya/turbowarp-plus-editor-project-starter/seed';
+
+const {files, warnings} = createRepositorySeed({
+    sb3: new Uint8Array(await sb3File.arrayBuffer()),
+    title: '作品名',
+    description: '作品の概要',
+    language: 'ja'
+}, {unpackSb3, toolchainVersion: packageVersion});
+```
+
+`files` は `{path, bytes}` の配列です。`warnings` は公開前の確認画面で表示できます。展開エラーは `SeedError.code` で区別できます。ライセンスを指定する場合は、採用する識別子と本文を `license: {name, text}` として渡します。
+
 ## ライセンス
 
 SPDX-License-Identifier: MPL-2.0

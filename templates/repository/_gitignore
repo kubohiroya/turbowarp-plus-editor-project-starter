@@ -1,0 +1,7 @@
+# Build the SB3 from the tracked project/ files.
+dist/
+*.sb3
+# Compare the contents of a rolled-back replacement before deleting it.
+.*.rollback-*
+.DS_Store
+Thumbs.db
