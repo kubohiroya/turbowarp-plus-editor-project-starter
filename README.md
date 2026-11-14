@@ -34,8 +34,8 @@ Projects shared on Scratch are licensed under [CC BY-SA 2.0](https://creativecom
 ## 2. Make the local repository (init)
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.1.0 init https://scratch.mit.edu/projects/123456789/ --lang en
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.1.0 init ~/Downloads/cat-adventure.sb3 --dir cat-adventure --lang en
+npx @kubohiroya/turbowarp-plus-editor-project-starter@0.2.0 init https://scratch.mit.edu/projects/123456789/ --lang en
+npx @kubohiroya/turbowarp-plus-editor-project-starter@0.2.0 init ~/Downloads/cat-adventure.sb3 --dir cat-adventure --lang en
 ```
 
 This creates a Git repository in a folder named after the project (`scratch-<id>` when the title has no Latin letters) and makes the first commit. Only the download from Scratch touches the network; nothing is sent to GitHub yet.
@@ -66,7 +66,7 @@ SB3 files are not committed; GitHub Actions builds them from the project folder.
 ## 4. Send it to GitHub (publish)
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.1.0 publish cat-adventure
+npx @kubohiroya/turbowarp-plus-editor-project-starter@0.2.0 publish cat-adventure
 ```
 
 Creates the repository with the GitHub CLI and pushes `main`. It is **private** unless you pass `--public`; `--name <[owner/]name>` changes the name or owner. `origin` is set to the HTTPS URL, which Plus Editor's GitHub connection uses; if git asks for a password over HTTPS, run `gh auth setup-git` once. It also turns on "Allow GitHub Actions to create and approve pull requests" for Import from Scratch; pass `--no-actions-prs` to leave that off.

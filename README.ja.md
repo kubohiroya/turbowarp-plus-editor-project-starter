@@ -52,13 +52,13 @@ Scratch の作品 ──init──▶ 手元の Git リポジトリ ──publis
 作業用のフォルダで次を実行します。
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.1.0 init https://scratch.mit.edu/projects/123456789/
+npx @kubohiroya/turbowarp-plus-editor-project-starter@0.2.0 init https://scratch.mit.edu/projects/123456789/
 ```
 
 `.sb3` から作る場合は、URL の代わりにファイルのパスを渡します。
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.1.0 init ~/Downloads/ねこのぼうけん.sb3 --dir neko-adventure
+npx @kubohiroya/turbowarp-plus-editor-project-starter@0.2.0 init ~/Downloads/ねこのぼうけん.sb3 --dir neko-adventure
 ```
 
 作品名から作ったフォルダ（英数字にできない作品名では `scratch-<作品 ID>`）に Git リポジトリを作り、最初のコミットまで行います。ネットワークに送るのは Scratch からのダウンロードだけで、GitHub にはまだ何も送りません。
@@ -101,7 +101,7 @@ Scratch の作品ページにある「使い方」と「メモとクレジット
 ## 4. GitHub に送る（publish）
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.1.0 publish neko-adventure
+npx @kubohiroya/turbowarp-plus-editor-project-starter@0.2.0 publish neko-adventure
 ```
 
 GitHub CLI でリポジトリを作り、`main` を push します。次のことも行います。
@@ -129,7 +129,7 @@ GitHub CLI でリポジトリを作り、`main` を push します。次のこ�
 
   ```bash
   cd neko-adventure
-  npx @kubohiroya/turbowarp-plus-editor-project-starter@0.1.0 reimport
+  npx @kubohiroya/turbowarp-plus-editor-project-starter@0.2.0 reimport
   git diff --stat
   ```
 
