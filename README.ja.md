@@ -90,6 +90,8 @@ neko-adventure/
 │   ├── workflows/scratch-import.yml Scratch の最新版をプルリクエストとして取り込む
 │   ├── ISSUE_TEMPLATE/              「不具合」「アイデア・改善」の書式
 │   └── pull_request_template.md
+├── AGENTS.md                 コーディングエージェント向けの作業ルール
+├── CLAUDE.md                 Claude Code に AGENTS.md を読ませる
 ├── .gitignore                SB3 などの生成物を入れない
 └── .gitattributes            改行をそろえ、画像・音をバイナリとして扱う
 ```

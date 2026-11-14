@@ -59,6 +59,7 @@ This creates a Git repository in a folder named after the project (`scratch-<id>
 | `.github/workflows/release.yml` | Attaches the SB3 and its SHA-256 to every published release |
 | `.github/workflows/scratch-import.yml` | Brings the latest shared version from Scratch in as a pull request |
 | `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` | Bug and idea forms, and a pull request checklist |
+| `AGENTS.md`, `CLAUDE.md` | Working rules for coding agents such as Codex and Claude Code: share the folder with the Editor, check before committing, and leave merges and releases to a person |
 
 SB3 files are not committed; GitHub Actions builds them from the project folder.
 
