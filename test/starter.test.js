@@ -136,8 +136,10 @@ describe('renderTemplates', () => {
             assert.deepEqual([...files.keys()].sort(), [
                 '.gitattributes', '.github/ISSUE_TEMPLATE/bug.yml', '.github/ISSUE_TEMPLATE/config.yml', '.github/ISSUE_TEMPLATE/idea.yml',
                 '.github/pull_request_template.md', '.github/workflows/check.yml', '.github/workflows/release.yml',
-                '.github/workflows/scratch-import.yml', '.gitignore', 'README.md'
+                '.github/workflows/scratch-import.yml', '.gitignore', 'AGENTS.md', 'CLAUDE.md', 'README.md'
             ]);
+            assert.equal(files.get('CLAUDE.md'), '@AGENTS.md\n');
+            assert.match(files.get('AGENTS.md'), /sb3-toolchain@0\.22\.0 check project\n/);
             for (const [file, text] of files) {
                 assert.doesNotMatch(text, /__[A-Z0-9_]+__/, file);
                 if (file.endsWith('.yml')) assert.doesNotThrow(() => parseYaml(text), file);
