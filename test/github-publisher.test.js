@@ -94,9 +94,11 @@ test('pushes the complete first commit and retries only unfinished topics', asyn
     assert.equal(git('rev-list', '--count', 'main'), '1');
     assert.match(git('show', 'main:README.md'), /# Example\n/);
     assert.equal(git('show', 'main:LICENSE'), license.body.trim());
-    assert.equal(git('show', 'main:project/assets/' + fontName), Buffer.from(font).toString());
-    assert.equal(git('show', 'main:project/extensions/example.js'), extension);
-    assert.match(git('show', 'main:project/project.source.json'), /embedded-extension:extensions\/example.js/);
+    assert.equal(git('show', 'main:assets/' + fontName), Buffer.from(font).toString());
+    assert.equal(git('show', 'main:extensions/example.js'), extension);
+    assert.match(git('show', 'main:project.source.json'), /embedded-extension:extensions\/example.js/);
+    const tree = git('ls-tree', '--name-only', 'main').split('\n');
+    assert.ok(tree.includes('sb3-source.json') && !tree.includes('project'), tree.join(', '));
     assert.equal(calls.filter(([method, route]) => method === 'POST' && route === '/user/repos').length, 1);
     assert.equal(calls.filter(([method, route]) => method === 'POST' && route.endsWith('/git-receive-pack')).length, 1);
 });

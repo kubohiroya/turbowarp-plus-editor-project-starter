@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {mkdtemp, readFile, rm, writeFile, mkdir} from 'node:fs/promises';
+import {mkdtemp, readFile, rm, stat, writeFile, mkdir} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {after, before, describe, test} from 'node:test';
 import {strToU8, unzipSync, zipSync} from 'fflate';
 import {parse as parseYaml} from 'yaml';
+import {validateSb3Source} from '@kubohiroya/sb3-toolchain';
 import {
     fetchScratchProject, initProject, parseScratchProjectId, reimportProject, renderTemplates, slugify, ScratchFetchError
 } from '../dist/index.js';
@@ -131,7 +132,7 @@ describe('renderTemplates', () => {
     for (const language of ['ja', 'en']) {
         test(`fills every placeholder and writes valid YAML (${language})`, async () => {
             const files = await renderTemplates({
-                title: 'Game', projectDirectory: 'project', sb3Name: 'game', toolchainVersion: '0.22.0', starterVersion: '0.1.0', language, scratch: null
+                title: 'Game', sb3Name: 'game', toolchainVersion: '0.22.0', starterVersion: '0.1.0', language, scratch: null
             });
             assert.deepEqual([...files.keys()].sort(), [
                 '.gitattributes', '.github/ISSUE_TEMPLATE/bug.yml', '.github/ISSUE_TEMPLATE/config.yml', '.github/ISSUE_TEMPLATE/idea.yml',
@@ -139,22 +140,35 @@ describe('renderTemplates', () => {
                 '.github/workflows/scratch-import.yml', '.gitignore', 'AGENTS.md', 'CLAUDE.md', 'README.md'
             ]);
             assert.equal(files.get('CLAUDE.md'), '@AGENTS.md\n');
-            assert.match(files.get('AGENTS.md'), /sb3-toolchain@0\.22\.0 check project\n/);
+            assert.match(files.get('AGENTS.md'), /sb3-toolchain@0\.22\.0 check \.\n/);
+            assert.match(files.get('README.md'), /sb3-toolchain@0\.22\.0 build \. --output dist\/game\.sb3\n/);
             for (const [file, text] of files) {
                 assert.doesNotMatch(text, /__[A-Z0-9_]+__/, file);
+                // The project is at the repository root; nothing points into a project/ folder any more.
+                assert.doesNotMatch(text, /`project\/|\bproject\/(project\.source|assets|sb3-source)|(check|build) project\b/, file);
                 if (file.endsWith('.yml')) assert.doesNotThrow(() => parseYaml(text), file);
             }
             const check = parseYaml(files.get('.github/workflows/check.yml'));
-            assert.match(check.jobs.check.steps.at(-2).run, /sb3-toolchain@0\.22\.0 build project --output dist\/game\.sb3/);
+            assert.equal(check.jobs.check.steps.at(-3).run, 'npx --yes @kubohiroya/sb3-toolchain@0.22.0 check .');
+            assert.equal(check.jobs.check.steps.at(-2).run, 'npx --yes @kubohiroya/sb3-toolchain@0.22.0 build . --output dist/game.sb3 --yes');
+            assert.equal(check.jobs.check.steps.at(-1).with.path, 'dist/game.sb3');
             const release = parseYaml(files.get('.github/workflows/release.yml'));
             assert.deepEqual(release.on.release.types, ['published']);
-            assert.match(parseYaml(files.get('.github/workflows/scratch-import.yml')).jobs.import.steps[2].run, /project-starter@0\.1\.0/);
+            const releaseRuns = release.jobs['attach-sb3'].steps.map(step => step.run ?? '');
+            assert.ok(releaseRuns.includes('npx --yes @kubohiroya/sb3-toolchain@0.22.0 check .'));
+            assert.ok(releaseRuns.some(run => run.startsWith('npx --yes @kubohiroya/sb3-toolchain@0.22.0 build . --output "dist/game-')));
+            for (const job of [...Object.values(check.jobs), ...Object.values(release.jobs)]) {
+                assert.ok(job.steps.every(step => step['working-directory'] === undefined));
+            }
+            const scratchImport = parseYaml(files.get('.github/workflows/scratch-import.yml')).jobs.import.steps[2].run;
+            assert.match(scratchImport, /project-starter@0\.1\.0/);
+            assert.match(scratchImport, /reimport .* --dir \. /);
         });
     }
 
     test('shows text from Scratch as quoted text, never as links or HTML', async () => {
         const files = await renderTemplates({
-            title: 'Game', projectDirectory: 'project', sb3Name: 'game', toolchainVersion: '0.22.0', starterVersion: '0.1.0', language: 'en',
+            title: 'Game', sb3Name: 'game', toolchainVersion: '0.22.0', starterVersion: '0.1.0', language: 'en',
             scratch: {id: '1', url: 'https://scratch.mit.edu/projects/1/', title: 'A](javascript:x) __TITLE__', author: 'bob',
                 instructions: '<script>alert(1)</script>\n# not a heading\nsee https://example.com/a_b', notes: ''}
         });
@@ -181,9 +195,20 @@ describe('initProject and reimportProject', () => {
         assert.equal(git(directory, 'status', '--porcelain'), '');
         assert.match(git(directory, 'log', '-1', '--format=%s'), /^Import "My Game" from My Game\.sb3$/);
         const manifest = JSON.parse(await readFile(path.join(directory, 'scratch-project.json'), 'utf8'));
-        assert.deepEqual(manifest, {formatVersion: 1, projectDirectory: 'project', sb3Name: 'my-game', language: 'ja', scratch: null});
-        const source = JSON.parse(await readFile(path.join(directory, 'project/project.source.json'), 'utf8'));
+        assert.deepEqual(manifest, {formatVersion: 1, projectDirectory: '.', sb3Name: 'my-game', language: 'ja', scratch: null});
+        // The project folder is the repository root: project files sit next to README.md and .github/.
+        const source = JSON.parse(await readFile(path.join(directory, 'project.source.json'), 'utf8'));
         assert.equal(source.targets[0].name, 'Stage');
+        assert.equal(await stat(path.join(directory, 'project')).catch(() => null), null);
+        const tracked = git(directory, 'ls-files').split('\n');
+        for (const file of ['project.source.json', 'sb3-source.json', 'embedded-extensions.json', 'README.md', 'AGENTS.md', '.github/workflows/check.yml']) {
+            assert.ok(tracked.includes(file), file);
+        }
+        assert.ok(tracked.some(file => file.startsWith('assets/')));
+        assert.ok(!tracked.some(file => file.startsWith('project/')));
+        assert.ok(result.files.includes('project.source.json') && result.files.includes('assets/'));
+        await validateSb3Source(directory);
+        const readmeBefore = await readFile(path.join(directory, 'README.md'), 'utf8');
         assert.doesNotMatch(await readFile(path.join(directory, 'README.md'), 'utf8'), /Scratch で公開されている作品/);
 
         await assert.rejects(reimportProject({directory}), /not imported from Scratch/);
@@ -194,11 +219,16 @@ describe('initProject and reimportProject', () => {
         const reimported = await reimportProject({directory, input: newer, summaryPath});
         assert.equal(reimported.changed, true);
         assert.match(await readFile(summaryPath, 'utf8'), /^# Scratch から最新の版を取り込む/);
-        assert.match(git(directory, 'status', '--porcelain'), /project\//);
+        assert.deepEqual(reimported.differenceCounts, {added: 1, modified: 2, removed: 1});
+        // Only the project files change; README and the workflows stay as they were.
+        assert.deepEqual(git(directory, 'status', '--porcelain', '--untracked-files=all').split('\n').map(line => line.trim().split(/\s+/)[1].split('/')[0]).sort(),
+            ['assets', 'assets', 'project.source.json', 'sb3-source.json']);
+        assert.equal(await readFile(path.join(directory, 'README.md'), 'utf8'), readmeBefore);
+        await validateSb3Source(directory);
 
-        // Uncommitted work in the folder is never overwritten.
-        await assert.rejects(reimportProject({directory, input}));
-        assert.match(await readFile(path.join(directory, 'project/project.source.json'), 'utf8'), /"score",\s*7/);
+        // Uncommitted work in the project files is never overwritten.
+        await assert.rejects(reimportProject({directory, input}), /uncommitted/);
+        assert.match(await readFile(path.join(directory, 'project.source.json'), 'utf8'), /"score",\s*7/);
     });
 
     test('takes a Scratch project and records where it came from', async () => {
@@ -219,6 +249,26 @@ describe('initProject and reimportProject', () => {
 
         const unchanged = await reimportProject({directory, fetch: server.fetchImpl});
         assert.equal(unchanged.changed, false);
+    });
+
+    test('re-imports into the project/ folder of a repository made by 0.2.0', async () => {
+        const directory = path.join(work, 'legacy');
+        await initProject({input: path.join(work, 'My Game.sb3'), directory});
+        await mkdir(path.join(directory, 'project'));
+        for (const entry of ['project.source.json', 'sb3-source.json', 'embedded-extensions.json', 'assets']) {
+            git(directory, 'mv', entry, path.join('project', entry));
+        }
+        const manifestPath = path.join(directory, 'scratch-project.json');
+        const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+        await writeFile(manifestPath, JSON.stringify({...manifest, projectDirectory: 'project'}));
+        git(directory, 'add', '--all');
+        git(directory, 'commit', '--quiet', '-m', 'Use the 0.2.0 layout');
+
+        const newer = path.join(work, 'legacy-newer.sb3');
+        await writeFile(newer, sb3(svg('orange'), 3));
+        assert.equal((await reimportProject({directory, input: newer})).changed, true);
+        assert.match(await readFile(path.join(directory, 'project/project.source.json'), 'utf8'), /"score",\s*3/);
+        assert.equal(await stat(path.join(directory, 'project.source.json')).catch(() => null), null);
     });
 
     test('refuses a folder that already has files', async () => {

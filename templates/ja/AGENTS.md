@@ -6,18 +6,20 @@
 
 | 場所 | 中身 |
 | --- | --- |
-| `__PROJECT_DIR__/` | sb3-toolchain v1 の作品フォルダ。エディターはこのフォルダを直接開いて保存する |
-| `__PROJECT_DIR__/project.source.json` | ブロック・変数・リスト・スプライトの設定（整形した JSON） |
-| `__PROJECT_DIR__/assets/` | コスチューム・背景・音 |
-| `__PROJECT_DIR__/sb3-source.json` | 作品フォルダの形式と、SB3 にまとめるときの順序 |
-| `scratch-project.json` | 取り込み元の Scratch 作品と、作品フォルダの場所 |
+| `project.source.json` | ブロック・変数・リスト・スプライトの設定（整形した JSON） |
+| `assets/` | コスチューム・背景・音 |
+| `extensions/`・`embedded-extensions.json` | 作品に埋め込んだ拡張機能 |
+| `sb3-source.json` | 作品フォルダの形式と、SB3 にまとめるときの順序 |
+| `scratch-project.json` | 取り込み元の Scratch 作品 |
 | `.github/` | 検査・リリース・Scratch からの取り込みの自動処理と、issue・プルリクエストの書式 |
+
+このリポジトリのフォルダが、そのまま sb3-toolchain v1 の作品フォルダです。エディターは「ファイル」→「フォルダを開く…」でこのフォルダを開き、ルートの作品ファイルに保存します。ブロックパレットの設定がある作品では、エディターが `block-palette.json` も置きます。
 
 SB3 ファイルはコミットしません。GitHub Actions が作品フォルダから作ります。
 
 ## エディターと同じフォルダを使うときの約束
 
-人がエディターで `__PROJECT_DIR__/` を開いたまま作業していることがあります。エディターは作品をメモリーに持ち、フォルダが外で変わると右下に「外部変更あり」を出して読み込み直します。ただし、エディターに未保存の編集があると、フォルダの変更をそのまま反映できません。
+人がエディターでこのリポジトリのフォルダを開いたまま作業していることがあります。エディターは作品をメモリーに持ち、フォルダが外で変わると右下に「外部変更あり」を出して読み込み直します。ただし、エディターに未保存の編集があると、フォルダの変更をそのまま反映できません。
 
 - ブランチの切り替え、pull、merge、rebase、reset、stash など、作業ツリーのファイルを書き換える操作の前に、エディターで「ファイル」→「プロジェクトを保存」を済ませ、作品を止めたかを人に確かめてください。
 - 人がまだ編集中だと言ったら、作業ツリーを書き換えないでください。コミットするのは、人が保存した内容です。
@@ -25,16 +27,18 @@ SB3 ファイルはコミットしません。GitHub Actions が作品フォル�
 
 ## 作品フォルダを変更するとき
 
+- コマンドはリポジトリのルートで実行します。
+
 - `project.source.json` を書き換えたら、コミットの前に必ず検査を通してください。
 
   ```bash
-  npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check __PROJECT_DIR__
+  npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check .
   ```
 
 - SB3 を作って確かめるときは `dist/` に出力します。`dist/` はコミットしません。
 
   ```bash
-  npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build __PROJECT_DIR__ --output dist/__SB3_NAME__.sb3 --yes
+  npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build . --output dist/__SB3_NAME__.sb3 --yes
   ```
 
 - コスチューム・背景・音の追加と削除は、エディターで行ってもらってください。`assets/` のファイルと `project.source.json`・`sb3-source.json` の対応を手で崩さないでください。

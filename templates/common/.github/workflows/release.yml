@@ -19,12 +19,12 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Validate the project folder
-        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check __PROJECT_DIR__
+      - name: Validate the project
+        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check .
       - name: Build the SB3
         env:
           TAG: ${{ github.event.release.tag_name }}
-        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build __PROJECT_DIR__ --output "dist/__SB3_NAME__-${TAG//\//-}.sb3" --yes
+        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build . --output "dist/__SB3_NAME__-${TAG//\//-}.sb3" --yes
       - name: Record the SHA-256
         run: cd dist && sha256sum -- *.sb3 > SHA256SUMS.txt
       - name: Attach the SB3 to the release

@@ -9,7 +9,7 @@ Describe the controls and rules here.
 
 ## Edit the project
 
-Clone this repository and select `project/` in TurboWarp Plus Editor under File → Open Project Folder. Save writes changes to the project folder.
+Clone this repository and select the repository folder in TurboWarp Plus Editor under File → Open Folder…. The project files sit at the repository root, and Save writes changes to them.
 
 [Develop a project with GitHub](__GUIDE_URL__)
 
@@ -18,8 +18,8 @@ Clone this repository and select `project/` in TurboWarp Plus Editor under File 
 Run these commands at the repository root using Node.js 24 or later.
 
 ```sh
-npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check project
-npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build project --output dist/__SB3_NAME__.sb3
+npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check .
+npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build . --output dist/__SB3_NAME__.sb3
 ```
 
 __LICENSE__

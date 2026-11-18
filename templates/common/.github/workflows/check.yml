@@ -1,4 +1,4 @@
-# Validates the project folder and builds an SB3 for every push to main and every pull request.
+# Validates the project at the repository root and builds an SB3 for every push to main and every pull request.
 # Download the SB3 from the run's "Artifacts" to try a pull request before merging it.
 name: Check project
 
@@ -19,10 +19,10 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Validate the project folder
-        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check __PROJECT_DIR__
+      - name: Validate the project
+        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check .
       - name: Build the SB3
-        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build __PROJECT_DIR__ --output dist/__SB3_NAME__.sb3 --yes
+        run: npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build . --output dist/__SB3_NAME__.sb3 --yes
       - uses: actions/upload-artifact@v4
         with:
           name: __SB3_NAME__-sb3

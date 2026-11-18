@@ -68,6 +68,11 @@ function renderRepositoryReadme({title, description, language, license, scratch}
     return repositoryTemplates[language].replace(/__[A-Z0-9_]+__/gu, key => replacements[key]);
 }
 
+/**
+ * Puts the project files at the repository root, next to README.md, .gitignore and LICENSE, so that the
+ * repository folder itself is the project folder. (Up to 0.2.0 the project went into `project/`.)
+ * A project path that names one of those repository files is refused with the code `path-collision`.
+ */
 export function composeRepositorySeed(
     project: ReadonlyMap<string, Uint8Array>, metadata: SeedMetadata, toolchainVersion: string
 ): Map<string, Uint8Array> {
@@ -77,7 +82,12 @@ export function composeRepositorySeed(
         ['.gitignore', encoder.encode(repositoryTemplates.gitignore)]
     ]);
     if (metadata.license) files.set('LICENSE', encoder.encode(metadata.license.text));
-    for (const [name, bytes] of project) files.set('project/' + name, bytes);
+    for (const [name, bytes] of project) {
+        if (files.has(name) || name === 'LICENSE') {
+            throw new SeedError('path-collision', `The project file ${name} has the same name as a repository file.`);
+        }
+        files.set(name, bytes);
+    }
     return files;
 }
 

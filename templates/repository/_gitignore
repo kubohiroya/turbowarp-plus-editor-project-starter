@@ -1,4 +1,4 @@
-# Build the SB3 from the tracked project/ files.
+# Build the SB3 from the project files tracked at the repository root.
 dist/
 *.sb3
 # Compare the contents of a rolled-back replacement before deleting it.
