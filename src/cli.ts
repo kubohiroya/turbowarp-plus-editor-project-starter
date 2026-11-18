@@ -11,15 +11,15 @@ Move a Scratch project into a GitHub repository developed with TurboWarp Plus Ed
 
 Usage:
   init <scratch-url | project-id | file.sb3> [--dir <folder>] [--title <title>]
-       [--project-dir <name>] [--lang ja|en] [--no-commit]
-      Make a local Git repository: the project expanded into <folder>/project, a README,
+       [--lang ja|en] [--no-commit]
+      Make a local Git repository: the project expanded at the root of <folder>, a README,
       GitHub Actions (check, release, import from Scratch) and issue / pull request forms.
 
   publish [<folder>] [--name <[owner/]repo>] [--public | --private] [--no-actions-prs]
       Create the GitHub repository with the GitHub CLI (gh) and push main. Private by default.
 
   reimport [<scratch-url | project-id | file.sb3>] [--dir <folder>] [--summary <file.md>]
-      Replace the project folder with the latest version (by default the shared version on
+      Replace the project files with the latest version (by default the shared version on
       Scratch recorded at init) so the difference can be reviewed and committed.
 
   fetch <scratch-url | project-id> [--output <file.sb3>]
@@ -48,14 +48,14 @@ async function main(argv: string[]): Promise<void> {
 
     if (command === 'init') {
         const {values, positionals} = parseArgs({args: rest, allowPositionals: true, options: {
-            dir: {type: 'string'}, title: {type: 'string'}, 'project-dir': {type: 'string'},
+            dir: {type: 'string'}, title: {type: 'string'},
             lang: {type: 'string', default: 'ja'}, 'no-commit': {type: 'boolean', default: false}
         }});
         if (positionals.length !== 1) fail('init takes one Scratch project URL, project ID or .sb3 file.');
         if (values.lang !== 'ja' && values.lang !== 'en') fail('--lang must be ja or en.');
         const result = await initProject({
             input: positionals[0], directory: values.dir, title: values.title,
-            projectDirectory: values['project-dir'], language: values.lang, commit: !values['no-commit'], log
+            language: values.lang, commit: !values['no-commit'], log
         });
         const relative = path.relative(process.cwd(), result.directory) || '.';
         log('');
@@ -66,7 +66,7 @@ async function main(argv: string[]): Promise<void> {
         log('Next:');
         log(`  npx @kubohiroya/turbowarp-plus-editor-project-starter@${starterVersion} publish ${relative}`);
         log('  Then open https://kubohiroya.github.io/turbowarp-plus-editor/editor.html in Chrome or Edge,');
-        log(`  press the branch button in the menu bar (it reads Git until a repository is chosen), choose Choose Repository…, select ${relative}, and open "${result.manifest.projectDirectory}".`);
+        log(`  choose File → Open Folder…, and select ${relative}.`);
         return;
     }
 

@@ -9,7 +9,7 @@ __SCRATCH_SECTION__
 
 ## 編集する
 
-このリポジトリをクローンし、TurboWarp Plus Editor の「ファイル」→「プロジェクトフォルダを開く…」で `project/` を選びます。「保存」で編集を作品フォルダに反映できます。
+このリポジトリをクローンし、TurboWarp Plus Editor の「ファイル」→「フォルダを開く…」でリポジトリのフォルダを選びます。作品のファイルはリポジトリのルートにあり、「保存」で編集をそこに反映できます。
 
 [GitHub で作品を開発する](__GUIDE_URL__)
 
@@ -18,8 +18,8 @@ __SCRATCH_SECTION__
 Node.js 24 以降を使い、リポジトリのルートで実行します。
 
 ```sh
-npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check project
-npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build project --output dist/__SB3_NAME__.sb3
+npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ check .
+npx --yes @kubohiroya/sb3-toolchain@__TOOLCHAIN_VERSION__ build . --output dist/__SB3_NAME__.sb3
 ```
 
 __LICENSE__

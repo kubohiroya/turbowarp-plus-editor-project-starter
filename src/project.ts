@@ -1,5 +1,5 @@
 import {execFile} from 'node:child_process';
-import {mkdtemp, mkdir, readdir, readFile, rm, stat, writeFile} from 'node:fs/promises';
+import {cp, mkdtemp, mkdir, readdir, readFile, rm, stat, writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,8 +20,19 @@ export const toolchainVersion: string = require('@kubohiroya/sb3-toolchain/packa
 /** Written at the repository root; tells `reimport` and the Scratch import workflow what to do. */
 export const manifestFileName = 'scratch-project.json';
 
+/**
+ * The files and folders of a project folder: the sb3-toolchain v1 files, plus `block-palette.json`, which the
+ * Editor adds for block palette settings. Since 0.3.0 they sit at the repository root, next to README.md,
+ * LICENSE, .github/ and the other repository files, none of which share these names.
+ */
+export const projectEntries: readonly string[] = ['project.source.json', 'sb3-source.json', 'embedded-extensions.json', 'block-palette.json', 'assets', 'extensions'];
+
+/** The value of `projectDirectory` in scratch-project.json: the project is at the repository root. */
+export const rootProjectDirectory = '.';
+
 export interface StarterManifest {
     formatVersion: 1;
+    /** `"."` (the repository root) since 0.3.0; repositories made by 0.2.0 or earlier record a subfolder such as `"project"`. */
     projectDirectory: string;
     sb3Name: string;
     language: Language;
@@ -77,11 +88,49 @@ async function isEmptyOrMissing(directory: string): Promise<boolean> {
     }
 }
 
+async function exists(file: string): Promise<boolean> {
+    return stat(file).then(() => true, () => false);
+}
+
+/** Copies the project entries that exist in `from` into `to`; anything else in either folder is left alone. */
+async function copyProjectEntries(from: string, to: string): Promise<void> {
+    for (const entry of projectEntries) {
+        if (await exists(path.join(from, entry))) await cp(path.join(from, entry), path.join(to, entry), {recursive: true});
+    }
+}
+
+/**
+ * sb3-toolchain replaces its output folder as a whole and refuses the repository root, so the SB3 is
+ * expanded in a temporary folder first and only the project entries are moved into the repository.
+ * `existing` is the current project, copied in so that the toolchain keeps its extension source records
+ * and reports the difference; the temporary copy is committed because the toolchain only replaces a
+ * Git-managed folder.
+ */
+async function importIntoStaging(sb3Path: string, existing: string | null) {
+    const staging = await mkdtemp(path.join(os.tmpdir(), 'tw-plus-starter-import-'));
+    const outputDirectory = path.join(staging, 'project');
+    try {
+        if (existing) {
+            await mkdir(outputDirectory);
+            await copyProjectEntries(existing, outputDirectory);
+            const identity = ['-c', 'user.name=TurboWarp Plus Editor Project Starter', '-c', 'user.email=starter@localhost', '-c', 'commit.gpgsign=false'];
+            await git(staging, 'init', '--quiet');
+            await git(staging, 'add', '--all');
+            await git(staging, ...identity, 'commit', '--quiet', '--no-verify', '-m', 'Current project');
+        }
+        const result = await importSb3({inputPath: sb3Path, outputDirectory, protectedRoot: staging, yes: true});
+        await validateSb3Source(outputDirectory);
+        return {result, outputDirectory, cleanup: () => rm(staging, {recursive: true, force: true})};
+    } catch (error) {
+        await rm(staging, {recursive: true, force: true});
+        throw error;
+    }
+}
+
 export interface InitOptions extends FetchScratchProjectOptions {
     input: string;
     directory?: string;
     title?: string;
-    projectDirectory?: string;
     language?: Language;
     commit?: boolean;
     log?: Log;
@@ -95,17 +144,13 @@ export interface InitResult {
 }
 
 /**
- * Creates a Git repository holding the project as an sb3-toolchain project folder, with a README,
+ * Creates a Git repository holding the project as an sb3-toolchain project folder at its root, with a README,
  * GitHub Actions for checking and releasing, and issue and pull request forms. Nothing is sent anywhere;
  * `publish` does that.
  */
 export async function initProject(options: InitOptions): Promise<InitResult> {
     const log = options.log ?? (() => {});
     const language = options.language ?? 'ja';
-    const projectDirectory = options.projectDirectory ?? 'project';
-    if (!/^[A-Za-z0-9._-]+$/.test(projectDirectory) || projectDirectory.startsWith('.')) {
-        throw new Error(`The project folder name "${projectDirectory}" must be a plain name such as "project".`);
-    }
     await git(process.cwd(), '--version').catch(() => {
         throw new Error('Git is not installed. Install Git (https://git-scm.com/) and try again.');
     });
@@ -123,24 +168,28 @@ export async function initProject(options: InitOptions): Promise<InitResult> {
         await mkdir(directory, {recursive: true});
         await git(directory, 'init', '--quiet', '--initial-branch=main');
 
-        log(`Expanding the project into ${path.join(directory, projectDirectory)}…`);
-        const imported = await importSb3({
-            inputPath: input.sb3Path,
-            outputDirectory: path.join(directory, projectDirectory),
-            yes: true
-        });
-        await validateSb3Source(path.join(directory, projectDirectory));
+        log(`Expanding the project into ${directory}…`);
+        const staged = await importIntoStaging(input.sb3Path, null);
+        const imported = staged.result;
+        try {
+            await copyProjectEntries(staged.outputDirectory, directory);
+        } finally {
+            await staged.cleanup();
+        }
+        await validateSb3Source(directory);
         log(`Expanded ${imported.assetCount} assets${imported.embeddedExtensionCount ? ` and ${imported.embeddedExtensionCount} embedded extensions` : ''}.`);
 
         const manifest: StarterManifest = {
             formatVersion: 1,
-            projectDirectory,
+            projectDirectory: rootProjectDirectory,
             sb3Name,
             language,
             scratch: input.scratch && {id: input.scratch.id, url: input.scratch.url, title: input.scratch.title, author: input.scratch.author}
         };
-        const files = await renderTemplates({title, projectDirectory, sb3Name, toolchainVersion, starterVersion, language, scratch: input.scratch});
+        const files = await renderTemplates({title, sb3Name, toolchainVersion, starterVersion, language, scratch: input.scratch});
         files.set(manifestFileName, `${JSON.stringify(manifest, null, 2)}\n`);
+        const collisions = [...files.keys()].filter(file => projectEntries.includes(file.split('/')[0]));
+        if (collisions.length) throw new Error(`Repository files would overwrite project files: ${collisions.join(', ')}`);
         for (const [file, content] of files) {
             await mkdir(path.dirname(path.join(directory, file)), {recursive: true});
             await writeFile(path.join(directory, file), content);
@@ -162,7 +211,11 @@ export async function initProject(options: InitOptions): Promise<InitResult> {
                 log(`  git -C "${directory}" commit -m "Import ${title}"`);
             }
         }
-        return {directory, manifest, committed, files: [...files.keys(), `${projectDirectory}/`].sort()};
+        const projectFiles = [];
+        for (const entry of projectEntries) {
+            if (await exists(path.join(directory, entry))) projectFiles.push(entry === 'assets' || entry === 'extensions' ? `${entry}/` : entry);
+        }
+        return {directory, manifest, committed, files: [...files.keys(), ...projectFiles].sort()};
     } finally {
         await input.cleanup();
     }
@@ -196,8 +249,10 @@ export interface ReimportResult {
 }
 
 /**
- * Replaces the project folder with a newer SB3 — by default the latest shared version on Scratch — so the
- * difference can be reviewed and committed. Uncommitted changes in the folder stop the import.
+ * Replaces the project files with a newer SB3 — by default the latest shared version on Scratch — so the
+ * difference can be reviewed and committed. Uncommitted changes in the project files stop the import.
+ * At the repository root only the project entries are replaced; README, .github/ and files the Editor
+ * keeps next to the project stay as they are.
  */
 export async function reimportProject(options: ReimportOptions): Promise<ReimportResult> {
     const log = options.log ?? (() => {});
@@ -209,7 +264,10 @@ export async function reimportProject(options: ReimportOptions): Promise<Reimpor
     const input = await resolveInput(source, {...options, log});
     try {
         const outputDirectory = path.join(directory, manifest.projectDirectory);
-        const result = await importSb3({inputPath: input.sb3Path, outputDirectory, yes: true});
+        const result = path.resolve(outputDirectory) === directory
+            ? await reimportAtRoot(directory, input.sb3Path)
+            // A repository made by 0.2.0 or earlier keeps the project in a subfolder that the toolchain replaces whole.
+            : await importSb3({inputPath: input.sb3Path, outputDirectory, yes: true});
         await validateSb3Source(outputDirectory);
         const counts = result.differenceCounts;
         const label = input.scratch ? input.scratch.url : path.basename(input.sb3Path);
@@ -227,6 +285,23 @@ export async function reimportProject(options: ReimportOptions): Promise<Reimpor
         return {changed: result.changed, differenceCounts: counts, source: label};
     } finally {
         await input.cleanup();
+    }
+}
+
+async function reimportAtRoot(directory: string, sb3Path: string) {
+    const staged = await importIntoStaging(sb3Path, directory);
+    try {
+        if (staged.result.changed) {
+            const tracked = await git(directory, 'ls-files', '--', ...projectEntries).catch(() => '');
+            if (!tracked) throw new Error(`The project files in ${directory} are not tracked by Git, so they cannot be replaced safely.`);
+            const changes = await git(directory, 'status', '--porcelain', '--untracked-files=all', '--', ...projectEntries);
+            if (changes) throw new Error(`The project files have uncommitted Git changes. Commit or discard them first:\n${changes}`);
+            for (const entry of projectEntries) await rm(path.join(directory, entry), {recursive: true, force: true});
+            await copyProjectEntries(staged.outputDirectory, directory);
+        }
+        return staged.result;
+    } finally {
+        await staged.cleanup();
     }
 }
 

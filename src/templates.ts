@@ -11,7 +11,6 @@ export const templatesDirectory = fileURLToPath(new URL('../templates/', import.
 
 export interface TemplateValues {
     title: string;
-    projectDirectory: string;
     sb3Name: string;
     toolchainVersion: string;
     starterVersion: string;
@@ -33,11 +32,10 @@ async function listFiles(root: string, directory = ''): Promise<string[]> {
     return files.sort();
 }
 
-/** Renders the repository files the starter adds next to the project folder, keyed by repository path. */
+/** Renders the repository files the starter adds next to the project files at the repository root, keyed by repository path. */
 export async function renderTemplates(values: TemplateValues): Promise<Map<string, string>> {
     const replacements: Record<string, string> = {
         __TITLE__: values.title.replace(/\s+/g, ' '),
-        __PROJECT_DIR__: values.projectDirectory,
         __SB3_NAME__: values.sb3Name,
         __TOOLCHAIN_VERSION__: values.toolchainVersion,
         __STARTER_VERSION__: values.starterVersion,

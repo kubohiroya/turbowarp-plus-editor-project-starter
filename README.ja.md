@@ -2,7 +2,7 @@
 
 [English](README.md) | 日本語
 
-Scratch（scratch.mit.edu）で作ってきた作品を、[TurboWarp Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/) で開発する GitHub リポジトリに移すためのツールです。作品を Git で変更を読める作品フォルダに展開し、検査・リリース・Scratch からの取り込みを自動で行う GitHub Actions と、issue・プルリクエストの書式をそろえたリポジトリを作ります。
+Scratch（scratch.mit.edu）で作ってきた作品を、[TurboWarp Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/) で開発する GitHub リポジトリに移すためのツールです。1つのリポジトリに1つの作品を入れ、作品を Git で変更を読める作品フォルダとしてリポジトリのルートに展開し、検査・リリース・Scratch からの取り込みを自動で行う GitHub Actions と、issue・プルリクエストの書式をそろえたリポジトリを作ります。
 
 移したあとの開発の進め方（issue → ブランチ → 編集 → コミット → push → プルリクエスト → マージ → リリース）は、Plus Editor の機能ガイド「[GitHub で作品を開発する](https://kubohiroya.github.io/turbowarp-plus-editor/features/github/)」で説明しています。
 
@@ -10,7 +10,7 @@ Scratch（scratch.mit.edu）で作ってきた作品を、[TurboWarp Plus Editor
 
 ```text
 Scratch の作品 ──init──▶ 手元の Git リポジトリ ──publish──▶ GitHub ──▶ Plus Editor で開発
- (URL か .sb3)            project/ に作品フォルダ             (非公開が既定)
+ (URL か .sb3)            ルートに作品フォルダ                (非公開が既定)
                           README・Actions・書式
 ```
 
@@ -67,7 +67,6 @@ npx @kubohiroya/turbowarp-plus-editor-project-starter@0.2.0 init ~/Downloads/ね
 | --- | --- | --- |
 | `--dir <フォルダ>` | 作るリポジトリのフォルダ。空か、存在しないこと | 作品名から作る |
 | `--title <題名>` | README の題名 | Scratch の作品名かファイル名 |
-| `--project-dir <名前>` | 作品フォルダの名前 | `project` |
 | `--lang ja\|en` | README と issue・プルリクエストの書式の言語 | `ja` |
 | `--no-commit` | ファイルを置いてステージするだけで、コミットしない | — |
 
@@ -78,12 +77,12 @@ Git に名前とメールアドレスが設定されていないと、ファイ�
 ```text
 neko-adventure/
 ├── README.md                 作品の説明・遊び方・開発の流れ
-├── scratch-project.json      取り込み元の Scratch 作品と、作品フォルダの場所
-├── project/                  作品フォルダ（sb3-toolchain v1 形式）
-│   ├── project.source.json   ブロック・変数・スプライトの設定（整形した JSON）
-│   ├── assets/               コスチューム・背景・音
-│   ├── sb3-source.json
-│   └── embedded-extensions.json
+├── scratch-project.json      取り込み元の Scratch 作品
+├── project.source.json       ブロック・変数・スプライトの設定（整形した JSON）
+├── assets/                   コスチューム・背景・音
+├── extensions/               埋め込み拡張機能（あれば）
+├── sb3-source.json           作品フォルダの形式と SB3 にまとめるときの順序
+├── embedded-extensions.json  埋め込み拡張機能の一覧
 ├── .github/
 │   ├── workflows/check.yml          push・プルリクエストごとに検査し、試せる SB3 を作る
 │   ├── workflows/release.yml        リリースを作ると SB3 と SHA-256 を添付する
@@ -95,6 +94,8 @@ neko-adventure/
 ├── .gitignore                SB3 などの生成物を入れない
 └── .gitattributes            改行をそろえ、画像・音をバイナリとして扱う
 ```
+
+リポジトリのフォルダがそのまま作品フォルダ（sb3-toolchain v1 形式）です。作品のファイル（`project.source.json`・`sb3-source.json`・`embedded-extensions.json`・`assets/`・`extensions/`）はルートに置き、README・LICENSE・`.github/`・`.gitignore`・`.gitattributes`・`AGENTS.md`・`CLAUDE.md`・`scratch-project.json` と名前は重なりません。ブロックパレットの設定を保存すると、Plus Editor が `block-palette.json` もルートに置きます。
 
 Scratch の作品ページにある「使い方」と「メモとクレジット」は README に引用として入ります。SB3 ファイルそのものはリポジトリに入れません。GitHub Actions が作品フォルダから作ります。
 
@@ -115,10 +116,9 @@ GitHub CLI でリポジトリを作り、`main` を push します。次のこ�
 ## 5. Plus Editor で開く
 
 1. Chrome か Edge で [Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/editor.html?lang=ja) を開きます。
-2. メニューバーの「ステージを開く」の左にあるブランチのボタン（リポジトリを選ぶ前は「Git」と表示されます）を押し、「リポジトリを選択…」で作ったリポジトリのフォルダ（`neko-adventure`）を選び、読み書きを許可します。ローカル Git のパネルが開きます。
-3. 一覧から作品フォルダ `project` を選び、「この作品を開く」を押します。
+2. 「ファイル」→「フォルダを開く…」で作ったリポジトリのフォルダ（`neko-adventure`）を選び、読み書きを許可します。リポジトリのフォルダがそのまま作品フォルダなので、作品が開き、Git も結び付きます。
 
-作品フォルダだけを開くなら「ファイル」→「プロジェクトフォルダを開く…」で `project` を選びます。ここからの開発の手順は「[GitHub で作品を開発する](https://kubohiroya.github.io/turbowarp-plus-editor/features/github/)」を読んでください。
+ここからの開発の手順は「[GitHub で作品を開発する](https://kubohiroya.github.io/turbowarp-plus-editor/features/github/)」を読んでください。
 
 ## 6. Scratch 側をどう扱うか
 
@@ -133,7 +133,7 @@ GitHub CLI でリポジトリを作り、`main` を push します。次のこ�
   git diff --stat
   ```
 
-  取り込みは作品フォルダを Scratch の版で **置き換えます**。GitHub 側で進めた変更は、そのプルリクエストでは消える変更として表れます。両方で同時に編集せず、編集する場所を一度に一つにしてください。コミットしていない変更が作品フォルダにあるときは、`reimport` は何も変えずに止まります。
+  取り込みは作品のファイルを Scratch の版で **置き換えます**。README・`.github/` など、リポジトリのほかのファイルは変えません。GitHub 側で進めた変更は、そのプルリクエストでは消える変更として表れます。両方で同時に編集せず、編集する場所を一度に一つにしてください。コミットしていない変更が作品のファイルにあるときは、`reimport` は何も変えずに止まります。
 
 Actions が作ったプルリクエストでは、GitHub の仕様で「Check project」が自動では動きません。プルリクエストを一度閉じて開き直すと動きます。
 
@@ -153,7 +153,7 @@ Actions が作ったプルリクエストでは、GitHub の仕様で「Check pr
 | --- | --- |
 | `init <URL\|ID\|.sb3>` | 手元に Git リポジトリを作り、最初のコミットまで行う |
 | `publish [<フォルダ>]` | GitHub にリポジトリを作り、`main` を送る |
-| `reimport [<URL\|ID\|.sb3>]` | 作品フォルダを新しい版で置き換える（既定は記録した Scratch の作品） |
+| `reimport [<URL\|ID\|.sb3>]` | 作品のファイルを新しい版で置き換える（既定は記録した Scratch の作品） |
 | `fetch <URL\|ID>` | Scratch の共有作品を `.sb3` としてダウンロードするだけ |
 
 `--help` ですべてのオプションを表示します。JavaScript からは `initProject`・`publishProject`・`reimportProject`・`fetchScratchProject` を使えます。
@@ -171,7 +171,7 @@ npm test
 
 ## ブラウザーで初期コミットのファイルを作る
 
-`/seed` は、ブラウザー向け sb3-toolchain の展開関数と使用版を受け取り、README、作品フォルダ、指定したライセンスのファイルをメモリー上に作ります。既存の CLI と同じ作品フォルダ形式を使用します。
+`/seed` は、ブラウザー向け sb3-toolchain の展開関数と使用版を受け取り、README、`.gitignore`、指定したライセンスのファイルと、ルートに置く作品のファイルをメモリー上に作ります。CLI と同じく、作品はリポジトリのルートに置きます。
 
 ```ts
 import {packageVersion, unpackSb3} from '@kubohiroya/sb3-toolchain/browser';
@@ -185,7 +185,17 @@ const {files, warnings} = createRepositorySeed({
 }, {unpackSb3, toolchainVersion: packageVersion});
 ```
 
-`files` は `{path, bytes}` の配列です。`warnings` は公開前の確認画面で表示できます。展開エラーは `SeedError.code` で区別できます。ライセンスを指定する場合は、採用する識別子と本文を `license: {name, text}` として渡します。
+`files` は `{path, bytes}` の配列で、作品のファイルは `project.source.json`・`assets/…` のようにルートからのパスになります。作品のファイルが README などリポジトリのファイルと同じ名前になるときは、`SeedError`（`code` は `path-collision`）になります。`warnings` は公開前の確認画面で表示できます。展開エラーは `SeedError.code` で区別できます。ライセンスを指定する場合は、採用する識別子と本文を `license: {name, text}` として渡します。
+
+## 0.2.0 からの変更（互換性のない変更）
+
+0.2.0 までは、作品を `project/` フォルダに置いていました。いまは作品をリポジトリのルートに置きます。
+
+- `init` は作品をルートに展開し、`--project-dir` は使えなくなりました。`scratch-project.json` の `projectDirectory` は `"."` です。
+- 作るリポジトリの Actions・README・AGENTS.md は、ルートの作品に対して `check .`・`build .` を実行します。
+- `/seed` の `composeRepositorySeed`・`createRepositorySeed` と `prepareRepositorySeed` は、作品のファイルを `project/` を付けずにルートのパスで返します。関数の引数と戻り値の形は変わりません。
+- `renderTemplates` の `TemplateValues` から `projectDirectory` をなくしました。
+- 0.2.0 までに作ったリポジトリ（`projectDirectory` が `"project"`）でも、`reimport` はこれまでどおり `project/` を置き換えます。ルートの構成に移すときは、`project/` の中身をルートに移し、Actions の `check project`・`build project` を `check .`・`build .` に、`scratch-project.json` の `projectDirectory` を `"."` に書き換え、`.github/workflows/scratch-import.yml` のこのツールの版を上げます。
 
 ## ライセンス
 

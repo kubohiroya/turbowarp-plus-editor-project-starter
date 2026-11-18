@@ -34,8 +34,19 @@ test('generates an in-memory README, license and project files with warnings', (
     assert.match(decoder.decode(repository.get('README.md')), /\[MIT\]\(LICENSE\)/);
     assert.equal(decoder.decode(repository.get('LICENSE')), input.license.text);
     assert.match(decoder.decode(repository.get('.gitignore')), /\*\.sb3/);
-    assert.deepEqual(repository.get('project/project.source.json'), project.get('project.source.json'));
+    // The project sits at the repository root, next to README.md; there is no project/ folder.
+    assert.deepEqual(repository.get('project.source.json'), project.get('project.source.json'));
+    assert.ok(![...repository.keys()].some(path => path.startsWith('project/')));
     assert.deepEqual(warnings, [{code: 'directory-entry', path: 'assets/'}, {code: 'scratch-license'}]);
+});
+
+test('refuses a project file that would replace a repository file', () => {
+    for (const name of ['README.md', '.gitignore', 'LICENSE']) {
+        assert.throws(() => createRepositorySeed(input, {
+            unpackSb3: () => ({files: new Map([[name, new Uint8Array([1])]]), warnings: []}),
+            toolchainVersion: '0.23.0'
+        }), error => error instanceof SeedError && error.code === 'path-collision', name);
+    }
 });
 
 test('retains the unpack error code', () => {
