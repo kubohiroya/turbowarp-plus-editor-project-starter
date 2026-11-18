@@ -208,6 +208,11 @@ describe('initProject and reimportProject', () => {
         assert.ok(!tracked.some(file => file.startsWith('project/')));
         assert.ok(result.files.includes('project.source.json') && result.files.includes('assets/'));
         await validateSb3Source(directory);
+        // A clone, as the Check project workflow checks out, has no empty extensions/ folder: Git keeps no empty folders.
+        const clone = path.join(work, 'clone');
+        execFileSync('git', ['clone', '--quiet', directory, clone]);
+        assert.equal(await stat(path.join(clone, 'extensions')).catch(() => null), null);
+        await validateSb3Source(clone);
         const readmeBefore = await readFile(path.join(directory, 'README.md'), 'utf8');
         assert.doesNotMatch(await readFile(path.join(directory, 'README.md'), 'utf8'), /Scratch で公開されている作品/);
 
