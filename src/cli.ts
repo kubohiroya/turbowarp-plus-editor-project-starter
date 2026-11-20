@@ -5,9 +5,9 @@ import {parseArgs} from 'node:util';
 import {initProject, publishProject, reimportProject, starterVersion, toolchainVersion} from './project.js';
 import {fetchScratchProject, parseScratchProjectId} from './scratch.js';
 
-const usage = `turbowarp-plus-editor-project-starter ${starterVersion} (sb3-toolchain ${toolchainVersion})
+const usage = `turbowarp-plus-project-folder-starter ${starterVersion} (sb3-toolchain ${toolchainVersion})
 
-Move a Scratch project into a GitHub repository developed with TurboWarp Plus Editor.
+Create a Git repository with an sb3-toolchain project folder, checks and release workflows.
 
 Usage:
   init <scratch-url | project-id | file.sb3> [--dir <folder>] [--title <title>]
@@ -64,7 +64,7 @@ async function main(argv: string[]): Promise<void> {
             log(`The Scratch author is ${result.manifest.scratch.author}. If this is not your project, keep its CC BY-SA 2.0 attribution in the README.`);
         }
         log('Next:');
-        log(`  npx @kubohiroya/turbowarp-plus-editor-project-starter@${starterVersion} publish ${relative}`);
+        log(`  npx @kubohiroya/turbowarp-plus-project-folder-starter@${starterVersion} publish ${relative}`);
         log('  Then open https://kubohiroya.github.io/turbowarp-plus-editor/editor.html in Chrome or Edge,');
         log(`  choose File → Open Folder…, and select ${relative}.`);
         return;
@@ -103,7 +103,7 @@ async function main(argv: string[]): Promise<void> {
         const {values, positionals} = parseArgs({args: rest, allowPositionals: true, options: {output: {type: 'string'}}});
         const id = positionals.length === 1 ? parseScratchProjectId(positionals[0]) : null;
         if (!id) fail('fetch takes one Scratch project URL or ID.');
-        const fetched = await fetchScratchProject(id, {userAgent: `turbowarp-plus-editor-project-starter/${starterVersion}`});
+        const fetched = await fetchScratchProject(id, {userAgent: `turbowarp-plus-project-folder-starter/${starterVersion}`});
         const output = path.resolve(values.output ?? `${id}.sb3`);
         await writeFile(output, fetched.sb3, {flag: 'wx'}).catch(error => {
             if ((error as NodeJS.ErrnoException).code === 'EEXIST') fail(`${output} already exists.`);

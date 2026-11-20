@@ -1,7 +1,7 @@
 {
-  "name": "@kubohiroya/turbowarp-plus-editor-project-starter",
-  "version": "0.3.1",
-  "description": "Move a Scratch project into a GitHub repository developed with TurboWarp Plus Editor",
+  "name": "@kubohiroya/turbowarp-plus-project-folder-starter",
+  "version": "0.4.0",
+  "description": "Create a Git repository with an sb3-toolchain project folder, checks and release workflows",
   "type": "module",
   "license": "MPL-2.0",
   "author": {
@@ -9,13 +9,13 @@
     "email": "hiroya@cuc.ac.jp",
     "url": "https://github.com/kubohiroya"
   },
-  "homepage": "https://github.com/kubohiroya/turbowarp-plus-editor-project-starter#readme",
+  "homepage": "https://github.com/kubohiroya/turbowarp-plus-project-folder-starter#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kubohiroya/turbowarp-plus-editor-project-starter.git"
+    "url": "git+https://github.com/kubohiroya/turbowarp-plus-project-folder-starter.git"
   },
   "bugs": {
-    "url": "https://github.com/kubohiroya/turbowarp-plus-editor-project-starter/issues"
+    "url": "https://github.com/kubohiroya/turbowarp-plus-project-folder-starter/issues"
   },
   "keywords": [
     "turbowarp",
@@ -41,7 +41,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "turbowarp-plus-editor-project-starter": "dist/cli.js"
+    "turbowarp-plus-project-folder-starter": "dist/cli.js"
   },
   "files": [
     "dist",

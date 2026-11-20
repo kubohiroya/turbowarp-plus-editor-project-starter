@@ -60,7 +60,7 @@ export async function resolveInput(input: string, options: FetchScratchProjectOp
     if (!id) throw new Error(`"${input}" is neither an .sb3 file nor a Scratch project URL or ID.`);
     options.log?.(`Downloading Scratch project ${id}…`);
     const fetched = await fetchScratchProject(id, {
-        userAgent: `turbowarp-plus-editor-project-starter/${starterVersion}`,
+        userAgent: `turbowarp-plus-project-folder-starter/${starterVersion}`,
         ...options
     });
     options.log?.(`Downloaded "${fetched.info.title}" with ${fetched.assetCount} costumes and sounds.`);
@@ -113,7 +113,7 @@ async function importIntoStaging(sb3Path: string, existing: string | null) {
         if (existing) {
             await mkdir(outputDirectory);
             await copyProjectEntries(existing, outputDirectory);
-            const identity = ['-c', 'user.name=TurboWarp Plus Editor Project Starter', '-c', 'user.email=starter@localhost', '-c', 'commit.gpgsign=false'];
+            const identity = ['-c', 'user.name=TurboWarp Plus Project Folder Starter', '-c', 'user.email=starter@localhost', '-c', 'commit.gpgsign=false'];
             await git(staging, 'init', '--quiet');
             await git(staging, 'add', '--all');
             await git(staging, ...identity, 'commit', '--quiet', '--no-verify', '-m', 'Current project');

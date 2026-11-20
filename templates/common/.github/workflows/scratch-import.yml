@@ -29,7 +29,7 @@ jobs:
         env:
           PROJECT: ${{ inputs.project }}
         run: >-
-          npx --yes @kubohiroya/turbowarp-plus-editor-project-starter@__STARTER_VERSION__
+          npx --yes @kubohiroya/turbowarp-plus-project-folder-starter@__STARTER_VERSION__
           reimport ${PROJECT:+"$PROJECT"} --dir . --summary "$RUNNER_TEMP/summary.md"
       - name: Open a pull request
         env:

@@ -161,7 +161,7 @@ describe('renderTemplates', () => {
                 assert.ok(job.steps.every(step => step['working-directory'] === undefined));
             }
             const scratchImport = parseYaml(files.get('.github/workflows/scratch-import.yml')).jobs.import.steps[2].run;
-            assert.match(scratchImport, /project-starter@0\.1\.0/);
+            assert.match(scratchImport, /turbowarp-plus-project-folder-starter@0\.1\.0/);
             assert.match(scratchImport, /reimport .* --dir \. /);
         });
     }
