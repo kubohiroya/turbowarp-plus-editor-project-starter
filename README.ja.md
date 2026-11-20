@@ -1,8 +1,8 @@
-# TurboWarp Plus Editor Project Starter
+# TurboWarp Plus Project Folder Starter
 
 [English](README.md) | 日本語
 
-Scratch（scratch.mit.edu）で作ってきた作品を、[TurboWarp Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/) で開発する GitHub リポジトリに移すためのツールです。1つのリポジトリに1つの作品を入れ、作品を Git で変更を読める作品フォルダとしてリポジトリのルートに展開し、検査・リリース・Scratch からの取り込みを自動で行う GitHub Actions と、issue・プルリクエストの書式をそろえたリポジトリを作ります。
+Scratch の URL や SB3 から、sb3-toolchain の作品フォルダと、Git で開発するためのリポジトリを作るツールです。1つのリポジトリに1つの作品を入れ、作品をリポジトリのルートに展開し、検査・リリース・Scratch からの取り込みを自動で行う GitHub Actions と、issue・プルリクエストの書式をそろえます。作った作品フォルダは [TurboWarp Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/) で開いて編集できます。
 
 移したあとの開発の進め方（issue → ブランチ → 編集 → コミット → push → プルリクエスト → マージ → リリース）は、Plus Editor の機能ガイド「[GitHub で作品を開発する](https://kubohiroya.github.io/turbowarp-plus-editor/features/github/)」で説明しています。
 
@@ -52,13 +52,13 @@ Scratch の作品 ──init──▶ 手元の Git リポジトリ ──publis
 作業用のフォルダで次を実行します。
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.3.1 init https://scratch.mit.edu/projects/123456789/
+npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 init https://scratch.mit.edu/projects/123456789/
 ```
 
 `.sb3` から作る場合は、URL の代わりにファイルのパスを渡します。
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.3.1 init ~/Downloads/ねこのぼうけん.sb3 --dir neko-adventure
+npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 init ~/Downloads/ねこのぼうけん.sb3 --dir neko-adventure
 ```
 
 作品名から作ったフォルダ（英数字にできない作品名では `scratch-<作品 ID>`）に Git リポジトリを作り、最初のコミットまで行います。ネットワークに送るのは Scratch からのダウンロードだけで、GitHub にはまだ何も送りません。
@@ -102,7 +102,7 @@ Scratch の作品ページにある「使い方」と「メモとクレジット
 ## 4. GitHub に送る（publish）
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.3.1 publish neko-adventure
+npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 publish neko-adventure
 ```
 
 GitHub CLI でリポジトリを作り、`main` を push します。次のことも行います。
@@ -129,7 +129,7 @@ GitHub CLI でリポジトリを作り、`main` を push します。次のこ�
 
   ```bash
   cd neko-adventure
-  npx @kubohiroya/turbowarp-plus-editor-project-starter@0.3.1 reimport
+  npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 reimport
   git diff --stat
   ```
 
@@ -175,7 +175,7 @@ npm test
 
 ```ts
 import {packageVersion, unpackSb3} from '@kubohiroya/sb3-toolchain/browser';
-import {createRepositorySeed} from '@kubohiroya/turbowarp-plus-editor-project-starter/seed';
+import {createRepositorySeed} from '@kubohiroya/turbowarp-plus-project-folder-starter/seed';
 
 const {files, warnings} = createRepositorySeed({
     sb3: new Uint8Array(await sb3File.arrayBuffer()),
@@ -186,6 +186,15 @@ const {files, warnings} = createRepositorySeed({
 ```
 
 `files` は `{path, bytes}` の配列で、作品のファイルは `project.source.json`・`assets/…` のようにルートからのパスになります。作品のファイルが README などリポジトリのファイルと同じ名前になるときは、`SeedError`（`code` は `path-collision`）になります。`warnings` は公開前の確認画面で表示できます。展開エラーは `SeedError.code` で区別できます。ライセンスを指定する場合は、採用する識別子と本文を `license: {name, text}` として渡します。
+
+## 0.4.0 での改名
+
+リポジトリ・npm パッケージ・CLI の名前を、`turbowarp-plus-editor-project-starter` から `turbowarp-plus-project-folder-starter` に変更しました。Editor 専用ライブラリと区別し、作品フォルダと開発用リポジトリを準備する役割を表します。
+
+- 新しいコマンドは `npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 …` です。インストールして使う場合の CLI 名も `turbowarp-plus-project-folder-starter` です。
+- JavaScript ではパッケージ名と `/seed` の import 先を新名へ変更します。公開 API と作品フォルダの形式は変わりません。
+- 既存の作品リポジトリでは、`.github/workflows/scratch-import.yml` の旧パッケージ名・版を新名の `0.4.0` へ変更すると、新版で再取り込みできます。作品ファイルの移動は不要です。
+- 旧名の公開済み版は残ります。切り戻す場合は、依存・import・コマンド・Actions を旧名の `0.3.1` へ戻します。
 
 ## 0.2.0 からの変更（互換性のない変更）
 

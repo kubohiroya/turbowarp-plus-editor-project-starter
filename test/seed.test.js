@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {createRepositorySeed, SeedError} from '@kubohiroya/turbowarp-plus-editor-project-starter/seed';
+import {createRepositorySeed, SeedError} from '@kubohiroya/turbowarp-plus-project-folder-starter/seed';
 
 const decoder = new TextDecoder();
 const input = {

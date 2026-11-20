@@ -1,8 +1,8 @@
-# TurboWarp Plus Editor Project Starter
+# TurboWarp Plus Project Folder Starter
 
 English | [日本語](README.ja.md)
 
-Move a project you have been making on Scratch (scratch.mit.edu) into a GitHub repository developed with [TurboWarp Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/). One repository holds one project: the project is expanded at the repository root as a project folder whose changes Git can show, and the repository comes with GitHub Actions that check, release and import from Scratch, plus issue and pull request forms.
+Create an sb3-toolchain project folder and a Git repository for development from a Scratch URL or an SB3 file. One repository holds one project, expanded at the repository root, with GitHub Actions that check, release and import from Scratch, plus issue and pull request forms. Open and edit the resulting project folder with [TurboWarp Plus Editor](https://kubohiroya.github.io/turbowarp-plus-editor/).
 
 How to work after the move (issue → branch → edit → commit → push → pull request → merge → release) is explained in the Plus Editor feature guide, [Developing a project on GitHub](https://kubohiroya.github.io/turbowarp-plus-editor/features/github/) (Japanese).
 
@@ -34,8 +34,8 @@ Projects shared on Scratch are licensed under [CC BY-SA 2.0](https://creativecom
 ## 2. Make the local repository (init)
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.3.1 init https://scratch.mit.edu/projects/123456789/ --lang en
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.3.1 init ~/Downloads/cat-adventure.sb3 --dir cat-adventure --lang en
+npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 init https://scratch.mit.edu/projects/123456789/ --lang en
+npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 init ~/Downloads/cat-adventure.sb3 --dir cat-adventure --lang en
 ```
 
 This creates a Git repository in a folder named after the project (`scratch-<id>` when the title has no Latin letters) and makes the first commit. Only the download from Scratch touches the network; nothing is sent to GitHub yet.
@@ -67,7 +67,7 @@ SB3 files are not committed; GitHub Actions builds them from the project at the 
 ## 4. Send it to GitHub (publish)
 
 ```bash
-npx @kubohiroya/turbowarp-plus-editor-project-starter@0.3.1 publish cat-adventure
+npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 publish cat-adventure
 ```
 
 Creates the repository with the GitHub CLI and pushes `main`. It is **private** unless you pass `--public`; `--name <[owner/]name>` changes the name or owner. `origin` is set to the HTTPS URL, which Plus Editor's GitHub connection uses; if git asks for a password over HTTPS, run `gh auth setup-git` once. It also turns on "Allow GitHub Actions to create and approve pull requests" for Import from Scratch; pass `--no-actions-prs` to leave that off.
@@ -111,7 +111,7 @@ The `/seed` entry point takes the browser unpacker and version of sb3-toolchain,
 
 ```ts
 import {packageVersion, unpackSb3} from '@kubohiroya/sb3-toolchain/browser';
-import {createRepositorySeed} from '@kubohiroya/turbowarp-plus-editor-project-starter/seed';
+import {createRepositorySeed} from '@kubohiroya/turbowarp-plus-project-folder-starter/seed';
 
 const {files, warnings} = createRepositorySeed({
     sb3: new Uint8Array(await sb3File.arrayBuffer()),
@@ -122,6 +122,15 @@ const {files, warnings} = createRepositorySeed({
 ```
 
 `files` is an array of `{path, bytes}` pairs; project files have root paths such as `project.source.json` and `assets/…`. A project file named like a repository file (README.md, .gitignore, LICENSE) throws a `SeedError` with the code `path-collision`. Show `warnings` before publishing. Import errors are distinguished by `SeedError.code`. To add a license, pass its identifier and complete text as `license: {name, text}`.
+
+## Rename in 0.4.0
+
+The repository, npm package and CLI have been renamed from `turbowarp-plus-editor-project-starter` to `turbowarp-plus-project-folder-starter`. The name describes preparing a project folder and a development repository, distinguishing this tool from Editor-only libraries.
+
+- Run `npx @kubohiroya/turbowarp-plus-project-folder-starter@0.4.0 …`. The installed CLI is also named `turbowarp-plus-project-folder-starter`.
+- In JavaScript, update the package name and `/seed` imports. The public API and project folder format are unchanged.
+- In an existing project repository, update the old package name and version in `.github/workflows/scratch-import.yml` to the new package at `0.4.0` to use the new importer. No project files need to move.
+- Published versions under the old name remain available. To roll back, restore the old package at `0.3.1` in dependencies, imports, commands and Actions.
 
 ## Breaking change from 0.2.0
 

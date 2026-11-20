@@ -5,7 +5,7 @@ name: Release
 #
 # npmjs.com side (package Settings -> Trusted publisher) must name:
 #   Organization or user  kubohiroya
-#   Repository            turbowarp-plus-editor-project-starter
+#   Repository            turbowarp-plus-project-folder-starter
 #   Workflow filename     release.yml   <- the filename alone
 #   Environment           (empty)
 on:
