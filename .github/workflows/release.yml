@@ -66,6 +66,38 @@ jobs:
           npm pack --ignore-scripts --json --pack-destination "$RUNNER_TEMP/npm" > "$RUNNER_TEMP/pack.json"
           file="$(node -p "const r = require(process.env.RUNNER_TEMP + '/pack.json'); (Array.isArray(r) ? r[0] : Object.values(r)[0]).filename")"
           echo "file=$RUNNER_TEMP/npm/$file" >> "$GITHUB_OUTPUT"
+      - name: Verify the published archive for a manual retry
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          NPM_ARCHIVE: ${{ steps.pack.outputs.file }}
+        run: |
+          set -euo pipefail
+          name="$(node -p "require('./package.json').name")"
+          version="$(node -p "require('./package.json').version")"
+          export SOURCE_REVISION="$(git rev-parse HEAD)"
+          export PUBLISHED_METADATA="$RUNNER_TEMP/published-package.json"
+          npm view "$name@$version" --json --prefer-online > "$PUBLISHED_METADATA"
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {createHash} from 'node:crypto';
+          import {readFile, writeFile} from 'node:fs/promises';
+          import {gunzipSync} from 'node:zlib';
+          const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+          const metadata = JSON.parse(await readFile(process.env.PUBLISHED_METADATA, 'utf8'));
+          assert.equal(metadata.name, pkg.name, 'Published package name differs');
+          assert.equal(metadata.version, pkg.version, 'Published package version differs');
+          assert.equal(metadata.gitHead, process.env.SOURCE_REVISION, 'Published source commit differs');
+          const response = await fetch(metadata.dist.tarball, {signal: AbortSignal.timeout(30000)});
+          assert.ok(response.ok, 'Published archive download failed');
+          const published = Buffer.from(await response.arrayBuffer());
+          assert.equal(createHash('sha1').update(published).digest('hex'), metadata.dist.shasum, 'Published archive SHA-1 differs');
+          assert.equal('sha512-' + createHash('sha512').update(published).digest('base64'), metadata.dist.integrity, 'Published archive integrity differs');
+          const local = await readFile(process.env.NPM_ARCHIVE);
+          assert.ok(gunzipSync(local).equals(gunzipSync(published)), 'Published archive contents differ');
+          // Keep the registry's exact bytes after verifying the source and complete tar payload.
+          await writeFile(process.env.NPM_ARCHIVE, published);
+          console.log('Verified published source, integrity and tar payload; using the existing archive.');
+          NODE
       - name: Attach to the GitHub Release
         # An attachment that already exists must be byte-identical: a release driver may have
         # uploaded its locally verified archive first, and a differing CI build stops here,
